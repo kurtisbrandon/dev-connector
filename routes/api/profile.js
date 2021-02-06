@@ -14,7 +14,7 @@ router.get('/me', auth, async (req, res) => {
     try {
         const profile = await Profile.findOne({ user: req.user.id }).populate('user', ['name', 'avatar']);
 
-        if (!profile) res.status(400).json({ msg: 'There is no profile for this user' })
+        if (!profile) return res.status(400).json({ msg: 'There is no profile for this user' })
 
         res.json(profile);
 
@@ -37,7 +37,7 @@ router.post(
         ]
     ], async (req, res) => {
         const errors = validationResult(req);
-        if (!errors.isEmpty()) res.status(400).json({ errors: errors.array() });
+        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
         const { company, website, location, bio, status, githubusername, skills,
             youtube, facebook, twitter, instagram, linkedin } = req.body;
@@ -111,13 +111,13 @@ router.get('/user/:user_id', async (req, res) => {
             .findOne({ user: req.params.user_id })
             .populate('user', ['name', 'avatar']);
 
-        if (!profile) return res.status(400).json({ msg: 'Profile not found' });
+        if (!profile) return res.status(404).json({ msg: 'Profile not found' });
 
         res.json(profile);
 
     } catch (err) {
         console.error(err.message);
-        if (err.kind == 'ObjectId') res.status(400).json({ msg: 'Profile not found' });
+        if (err.kind === 'ObjectId') res.status(404).json({ msg: 'Profile not found' });
 
         res.status(500).send('Server Error');
     }
@@ -290,7 +290,7 @@ router.get('/github/:username', (req, res) => {
             if (error) console.error(error);
 
             if (response.statusCode !== 200) {
-                res.status(404).json({ msg: 'No Github profile found' })
+                return res.status(404).json({ msg: 'No Github profile found' })
             }
 
             res.json(JSON.parse(body));
